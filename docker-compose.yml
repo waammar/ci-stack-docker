@@ -1,5 +1,3 @@
-version: '2'
-
 networks:
   prodnetwork:
     driver: bridge
@@ -48,6 +46,7 @@ services:
     - POSTGRES_DB=gitlab
   networks:
     - prodnetwork
+
  gitlab:
   image: sameersbn/gitlab:8.3.2
   ports:
