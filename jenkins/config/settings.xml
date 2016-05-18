@@ -1,23 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <settings xmlns="http://maven.apache.org/SETTINGS/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
-
-    <servers>
-      <server>
-        <id>nexus-release-repository</id>
-        <username>admin</username>
-        <password>admin123</password>
-      </server>
-    </servers>
-
-    <mirrors>
-      <mirror>
-        <!--This sends everything else to /public -->
-        <id>nexus</id>
-        <mirrorOf>*</mirrorOf>
-        <url>http://nexus:8081/nexus/content/groups/public</url>
-      </mirror>
-    </mirrors>
-
     <profiles>
       <profile>
           <id>sonar</id>
@@ -36,9 +18,6 @@
           </properties>
       </profile>
       <profile>
-        <id>nexus</id>
-        <!--Enable snapshots for the built in central repo to direct -->
-        <!--all requests to nexus via the mirror -->
         <repositories>
           <repository>
             <id>central</id>
@@ -57,8 +36,4 @@
         </pluginRepositories>
       </profile>
     </profiles>
-    <activeProfiles>
-      <!--make the profile active all the time -->
-      <activeProfile>nexus</activeProfile>
-    </activeProfiles>
 </settings>

@@ -48,6 +48,7 @@ services:
     - POSTGRES_DB=gitlab
   networks:
     - prodnetwork
+
  gitlab:
   image: sameersbn/gitlab:8.3.2
   ports:
@@ -102,6 +103,7 @@ services:
     - IMAP_STARTTLS=false
   volumes:
     - /srv/docker/gitlab/gitlab:/home/git/data
+
  redis:
   image: sameersbn/redis:latest
   networks:
