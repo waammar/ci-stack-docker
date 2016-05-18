@@ -24,7 +24,7 @@ ENV SONARQUBE_JDBC_USERNAME sonar
 ENV SONARQUBE_JDBC_PASSWORD sonar
 ENV SONARQUBE_JDBC_URL jdbc:h2:tcp://localhost:9092/sonar
 
-ENV SONAR_VERSION 5.3
+ENV SONAR_VERSION 5.5
 
 ENV SONAR_DOWNLOAD_URL https://sonarsource.bintray.com/Distribution
 
