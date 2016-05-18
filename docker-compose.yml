@@ -8,37 +8,37 @@ services:
     volumes:
       - /srv/docker/postgresql:/var/lib/postgresql
 
-  gitlab:
-    restart: always
-    image: sameersbn/gitlab:8.7.5
-    env_file: config
-    links:
-      - redis:redis
-      - postgresql:postgresql
-    ports:
-      - "10080:80"
-      - "10022:22"
-    depends_on:
-      - postgresql
-      - redis
-    volumes:
-      - /srv/docker/gitlab:/home/git/data
+  # gitlab:
+  #   restart: always
+  #   image: sameersbn/gitlab:8.7.5
+  #   env_file: config
+  #   links:
+  #     - redis:redis
+  #     - postgresql:postgresql
+  #   ports:
+  #     - "10080:80"
+  #     - "10022:22"
+  #   depends_on:
+  #     - postgresql
+  #     - redis
+  #   volumes:
+  #     - /srv/docker/gitlab:/home/git/data
 
-  redis:
-    restart: always
-    image: sameersbn/redis:latest
-    env_file: config
-    volumes:
-      - /srv/docker/redis:/var/lib/redis
+  # redis:
+  #   restart: always
+  #   image: sameersbn/redis:latest
+  #   env_file: config
+  #   volumes:
+  #     - /srv/docker/redis:/var/lib/redis
 
-  jenkins:
-    restart: always
-    build: ./jenkins
-    env_file: config
-    ports:
-      - "18080:8080"
-    volumes:
-      - /srv/docker/jenkins_home:/var/jenkins_home
+  # jenkins:
+  #   restart: always
+  #   build: ./jenkins
+  #   env_file: config
+  #   ports:
+  #     - "18080:8080"
+  #   volumes:
+  #     - /srv/docker/jenkins_home:/var/jenkins_home
 
   sonarqube:
     restart: always
