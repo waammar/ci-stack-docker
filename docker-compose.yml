@@ -45,12 +45,11 @@ services:
     ports:
      - "9000:9000"
     environment:
-      - SONARQUBE_JDBC_URL=jdbc:postgresql://sonardb:5432/sonar
       - DB_USER=sonar
       - DB_PASS=_s3cR3t_
       - DB_NAME=sonar
     links:
-     - sonardb:postgresql
+     - sonardb:sonardb
     volumes:
      - /srv/docker/sonar/extensions:/opt/sonarqube/extensions
      - /srv/docker/sonar/plugins:/opt/sonarqube/lib/bundled-plugins
@@ -59,6 +58,7 @@ services:
     restart: always
     image: sameersbn/postgresql:9.4-21
     environment:
+      - SONARQUBE_JDBC_URL=jdbc:postgresql://sonardb:5432/sonar
       - POSTGRESQL_USER=sonar
       - POSTGRESQL_PASS=_s3cR3t_
       - POSTGRESQL_DB=sonar
