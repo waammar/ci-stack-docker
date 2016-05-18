@@ -54,13 +54,14 @@ services:
   #   volumes:
   #    - /srv/docker/sonar/extensions:/opt/sonarqube/extensions
   #    - /srv/docker/sonar/plugins:/opt/sonarqube/lib/bundled-plugins
-  sonar:
-    build: ./sonar
+
+  sonarqube:
+    image: sonarqube
     ports:
       - "9000:9000"
       - "5432:5432"
-    depends_on:
-      - sonardb
+    links:
+      - sonardb:sonardb
     environment:
       - SONARQUBE_JDBC_URL=jdbc:postgresql://sonardb:5432/sonar
 
@@ -69,26 +70,8 @@ services:
     environment:
       - POSTGRES_USER=sonar
       - POSTGRES_PASSWORD=sonar
-  volumes:
-    - /srv/docker/sonardb2:/var/lib/postgresql
-
- # sonarqube:
- #  build: ./sonar
- #  ports:
- #   - "9000:9000"
- #   - "5432:5432"
- #  depends_on:
- #   - sonardb
- #  environment:
- #   - SONARQUBE_JDBC_URL=jdbc:postgresql://sonardb:5432/sonar
-
- #  sonardb:
- #    image: postgres
- #    environment:
- #     - POSTGRES_USER=sonar
- #     - POSTGRES_PASSWORD=_s3cR3t_
- #    volumes:
- #      - /srv/docker/sonardb:/var/lib/postgresql
+    volumes:
+      - /srv/docker/sonardb:/var/lib/postgresql
 
 
 
