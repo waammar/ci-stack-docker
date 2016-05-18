@@ -41,7 +41,6 @@ services:
   #     - /srv/docker/jenkins_home:/var/jenkins_home
 
   sonarqube:
-    restart: always
     image: sonarqube
     env_file: config
     ports:
