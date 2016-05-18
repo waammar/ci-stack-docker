@@ -14,7 +14,7 @@ gpgkey=https://yum.dockerproject.org/gpg
 EOF
 
 #Install docker engine (last)
-sudo yum install docker-engine
+sudo yum -y install docker-engine
 sudo service docker start
 
 sudo usermod -aG docker centos
