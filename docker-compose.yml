@@ -1,12 +1,12 @@
 version: '2'
 
 services:
-  postgresql:
-    restart: always
-    image: sameersbn/postgresql:9.4-21
-    env_file: config
-    volumes:
-      - /srv/docker/postgresql:/var/lib/postgresql
+  # postgresql:
+  #   restart: always
+  #   image: sameersbn/postgresql:9.4-21
+  #   env_file: config
+  #   volumes:
+  #     - /srv/docker/postgresql:/var/lib/postgresql
 
   # gitlab:
   #   restart: always
@@ -46,7 +46,15 @@ services:
     ports:
      - "9000:9000"
     links:
-     - postgresql:postgresql
+     - sonardb:postgresql
     volumes:
      - /srv/docker/sonar/extensions:/opt/sonarqube/extensions
      - /srv/docker/sonar/plugins:/opt/sonarqube/lib/bundled-plugins
+
+  sonardb:
+    restart: always
+    image: sameersbn/postgresql:9.4-21
+    env_file: config
+    volumes:
+      - /srv/docker/sonardb:/var/lib/postgresql
+
