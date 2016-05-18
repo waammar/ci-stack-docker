@@ -31,7 +31,7 @@ services:
     volumes:
       - /srv/docker/redis:/var/lib/redis
 
-   jenkins:
+  jenkins:
     build: ./jenkins
     env_file: config
     ports:
