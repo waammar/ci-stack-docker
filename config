@@ -45,3 +45,7 @@ DB_EXTENSION=pg_trgm
 
 REDIS_HOST=redis
 REDIS_PORT=6379
+
+SONARQUBE_JDBC_URL=jdbc:postgresql://postgresql:5432/sonar
+POSTGRES_USER=sonar
+POSTGRES_PASSWORD=_s3cR3t_

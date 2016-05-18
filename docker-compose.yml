@@ -32,9 +32,22 @@ services:
       - /srv/docker/redis:/var/lib/redis
 
   jenkins:
+    restart: always
     build: ./jenkins
     env_file: config
     ports:
       - "18080:8080"
     volumes:
       - /srv/docker/jenkins_home:/var/jenkins_home
+
+  sonarqube:
+    restart: always
+    image: sonarqube
+    env_file: config
+    ports:
+     - "9000:9000"
+    links:
+     - postgresql:postgresql
+    volumes:
+     - /srv/docker/sonar/extensions:/opt/sonarqube/extensions
+     - /srv/docker/sonar/plugins:/opt/sonarqube/lib/bundled-plugins
