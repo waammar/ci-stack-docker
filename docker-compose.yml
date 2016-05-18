@@ -30,3 +30,11 @@ services:
     env_file: config
     volumes:
       - /srv/docker/redis:/var/lib/redis
+
+   jenkins:
+    build: ./jenkins
+    env_file: config
+    ports:
+      - "18080:8080"
+    volumes:
+      - /srv/docker/jenkins_home:/var/jenkins_home
