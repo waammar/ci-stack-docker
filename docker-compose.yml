@@ -64,7 +64,7 @@ services:
     - DB_NAME=gitlab
     - DB_USER=gitlab
     - DB_PASS=gitlab
-    - REDIS_HOST=redisio
+    - REDIS_HOST=redis
 
     - TZ=Europe/Paris
     - GITLAB_TIMEZONE=Paris
