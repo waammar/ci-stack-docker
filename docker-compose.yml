@@ -34,6 +34,7 @@ services:
   jenkins:
     build: ./jenkins
     env_file: config
+    privileged: true
     ports:
       - "18080:8080"
     volumes:
