@@ -69,7 +69,6 @@ services:
     environment:
      - POSTGRES_USER=sonar
      - POSTGRES_PASSWORD=_s3cR3t_
-     - POSTGRES_DB=sonar
     volumes:
       - /srv/docker/sonardb:/var/lib/postgresql
 
