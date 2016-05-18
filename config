@@ -45,5 +45,3 @@ DB_EXTENSION=pg_trgm
 
 REDIS_HOST=redis
 REDIS_PORT=6379
-
-JAVA_OPTS: "-Djava.awt.headless=true"
