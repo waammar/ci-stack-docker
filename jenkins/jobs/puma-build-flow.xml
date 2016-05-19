@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<com.cloudbees.plugins.flow.BuildFlow plugin="build-flow-plugin@0.18">
+  <actions/>
+  <description>Build flow with parameters</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>10</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>TARGET_PLATFORM</name>
+          <description>Define your target deployment platform&lt;br/&gt;</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string></string>
+              <string>development</string>
+              <string>packaging</string>
+              <string>demonstration</string>
+              <string>qualification</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>BUILD_BRANCH</name>
+          <description>release/v01.10 : SP10 RC4&lt;br&gt;
+develop : SP11 standby&lt;br&gt;</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>release/v01.10</string>
+              <string>develop</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>PURGE_LOGS</name>
+          <description>purge logs loader-eden, atom-mediation, moodle, ...</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>BUILD_RPMS</name>
+          <description>Would you like build rpms ?&lt;br/&gt;
+Otherwise use the last succesful build on job &apos;puma-build-rpms-join-artefacts&apos;&lt;br/&gt;</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>UNINSTALL_RPMS</name>
+          <description>Would you like uninstall rpms ?&lt;br/&gt;</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>INSTALL_RPMS</name>
+          <description>Would you like install or update rpms ?&lt;br/&gt;
+Otherwise no change applications.&lt;br/&gt;</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>INSTALL_DB</name>
+          <description>Would you like execute post installation database ?&lt;br/&gt;
+Otherwise no change database.&lt;br/&gt;</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>INSTALL_FULL</name>
+          <description>Would you like execute full installation database ?&lt;br/&gt;
+Otherwise try a migration.&lt;br/&gt;</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>START_BATCH</name>
+          <description>Would like execute start-loader-eden ?&lt;br/&gt;</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SVN_ZIP_EDEN</name>
+          <description>Define your tesdata to load (zip eden from SVN)&lt;br/&gt;
+DSIv546F-pilote-light https://svn-oab.si.fr.intraorange/svn/AFP001/trunk/04-technique/Pilotes/METIS-V0546F-atomique.zip&lt;br/&gt;
+DSIv546F-qualif-light https://svn-oab.si.fr.intraorange/svn/AFP001/trunk/02-fonctionnel/04-Qualification/01-JDD-EDEN-Qualification/METIS-V0546F-20151030-0002.zip&lt;br/&gt;
+</description>
+          <defaultValue>https://svn-oab.si.fr.intraorange/svn/AFP001/trunk/02-fonctionnel/04-Qualification/01-JDD-EDEN-Qualification/METIS-V0546F-20151030-0002.zip</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.28.orange2"/>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>(Default)</jdk>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders/>
+  <publishers/>
+  <buildWrappers/>
+  <icon/>
+  <dsl>System.setProperty(&apos;result_build_join_id&apos;, &apos;&lt;SpecificBuildSelector&gt;&lt;buildNumber&gt;lastSuccessfulBuild&lt;/buildNumber&gt;&lt;/SpecificBuildSelector&gt;&apos;);
+
+if (params.BUILD_RPMS == &quot;true&quot;) {
+	build(&quot;puma-build-flow-rpm-all&quot;, BUILD_BRANCH: params.BUILD_BRANCH)
+}
+
+def result_build_join_id = System.getProperty(&apos;result_build_join_id&apos;);
+out.println &quot;result_build_join_id: $result_build_join_id&quot;
+
+build(&quot;puma-build-rpms-ansible&quot;, 
+      TARGET_PLATFORM: params.TARGET_PLATFORM, 
+      UNINSTALL_RPMS: params.UNINSTALL_RPMS, 
+      INSTALL_RPMS: params.INSTALL_RPMS, 
+      INSTALL_DB: params.INSTALL_DB, 
+      INSTALL_FULL: params.INSTALL_FULL, 
+      SVN_ZIP_EDEN: params.SVN_ZIP_EDEN, 
+      BUILD_SELECTOR_ARTEFACTS: result_build_join_id,
+      BRANCH_DEPLOYER: params.BUILD_BRANCH,
+      START_BATCH: params.START_BATCH,
+      PURGE_LOGS: params.PURGE_LOGS
+      )</dsl>
+  <buildNeedsWorkspace>false</buildNeedsWorkspace>
+</com.cloudbees.plugins.flow.BuildFlow>

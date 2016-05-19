@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>5</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>3</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.25.orange2"/>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>git@gitlab.aql.fr:afp001/puma.git</url>
+        <credentialsId>b81dc237-40f8-4423-b85a-36968f45d00c</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>origin/develop</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.DisableRemotePoll/>
+      <hudson.plugins.git.extensions.impl.CleanCheckout/>
+    </extensions>
+  </scm>
+  <assignedNode>php</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>Oracle JDK 7u71</jdk>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>@midnight</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>BUILD_CONFIG_TEMPLATE=phpunit
+DATABASE_NAME=puma
+DATABASE_USER=jenkins
+DATABASE_PASSWORD=Password1*
+ENV_HOST=192.168.129.61
+ENV_USER=root
+
+echo &quot;
+BUILD_CONFIG_TEMPLATE=${BUILD_CONFIG_TEMPLATE}
+DATABASE_NAME=${DATABASE_NAME}
+DATABASE_USER=${DATABASE_USER}
+DATABASE_PASSWORD=${DATABASE_PASSWORD}
+
+# Environment Configuration
+ENV_HOST=${ENV_HOST}
+ENV_USER=${ENV_USER}
+&quot; &gt; ${WORKSPACE}/build/config/config_local.cfg
+
+${WORKSPACE}/build/scripts/jenkins/run-tests.sh
+${WORKSPACE}/build/scripts/jenkins/make-sonar-config.sh</command>
+    </hudson.tasks.Shell>
+    <hudson.plugins.sonar.SonarRunnerBuilder plugin="sonar@2.2.1">
+      <installationName>Sonar for external slaves</installationName>
+      <project></project>
+      <properties>sonar.verbose=true</properties>
+      <javaOpts></javaOpts>
+      <jdk>Oracle JDK 7u71</jdk>
+      <task></task>
+    </hudson.plugins.sonar.SonarRunnerBuilder>
+  </builders>
+  <publishers>
+    <hudson.tasks.Mailer plugin="mailer@1.15">
+      <recipients>brieuc.thomas@orange.com nicolas.monfort@orange.com sfoubert.ext@orange.com</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>true</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.28">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter></cleanupParameter>
+      <externalDelete></externalDelete>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+    <org.jenkinsci.plugins.configfiles.buildwrapper.ConfigFileBuildWrapper plugin="config-file-provider@2.8.1">
+      <managedFiles>
+        <org.jenkinsci.plugins.configfiles.buildwrapper.ManagedFile>
+          <fileId>org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig-faas</fileId>
+          <targetLocation></targetLocation>
+          <variable>GLOBAL_SETTINGS</variable>
+        </org.jenkinsci.plugins.configfiles.buildwrapper.ManagedFile>
+      </managedFiles>
+    </org.jenkinsci.plugins.configfiles.buildwrapper.ConfigFileBuildWrapper>
+    <com.cloudbees.jenkins.plugins.sshagent.SSHAgentBuildWrapper plugin="ssh-agent@1.8">
+      <credentialIds>
+        <string>b81dc237-40f8-4423-b85a-36968f45d00c</string>
+      </credentialIds>
+      <ignoreMissing>false</ignoreMissing>
+    </com.cloudbees.jenkins.plugins.sshagent.SSHAgentBuildWrapper>
+  </buildWrappers>
+</project>

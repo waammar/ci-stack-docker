@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Build deployment rpms with ansible</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>10</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>TARGET_PLATFORM</name>
+          <description>target platform&lt;br/&gt;</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>development</string>
+              <string>packaging</string>
+              <string>demonstration</string>
+              <string>qualification</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>PURGE_LOGS</name>
+          <description></description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>UNINSTALL_RPMS</name>
+          <description>would like uninstall rpms ?</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>INSTALL_RPMS</name>
+          <description>would like install or update rpms ?</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>INSTALL_DB</name>
+          <description>would like execute post installation after rpms ?</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>INSTALL_FULL</name>
+          <description>Would you like execute force full installation database ?&lt;br/&gt;
+Otherwise try a migration.&lt;br/&gt;</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SVN_ZIP_EDEN</name>
+          <description>zip eden from SVN&lt;br/&gt;</description>
+          <defaultValue>https://svn-oab.si.fr.intraorange/svn/AFP001/trunk/02-fonctionnel/04-Qualification/01-JDD-EDEN-Qualification/METIS-V0546C-20151030-0002.zip</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.plugins.copyartifact.BuildSelectorParameter plugin="copyartifact@1.36.1">
+          <name>BUILD_SELECTOR_ARTEFACTS</name>
+          <description>build number job &lt;u&gt;puma-build-rpms-join-artefacts&lt;/u&gt; for rpms&lt;br/&gt;</description>
+          <defaultSelector class="hudson.plugins.copyartifact.SpecificBuildSelector">
+            <buildNumber>lastSuccessfulBuild</buildNumber>
+          </defaultSelector>
+        </hudson.plugins.copyartifact.BuildSelectorParameter>
+        <hudson.model.StringParameterDefinition>
+          <name>BRANCH_DEPLOYER</name>
+          <description></description>
+          <defaultValue>develop</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>START_BATCH</name>
+          <description></description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.28.orange2"/>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>rpmbuild &amp;&amp; centos-6</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>(Default)</jdk>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.36.1">
+      <project>puma-build-rpms-join-artefacts</project>
+      <filter>*.rpm</filter>
+      <target>rpms</target>
+      <excludes></excludes>
+      <selector class="hudson.plugins.copyartifact.ParameterizedBuildSelector">
+        <parameterName>BUILD_SELECTOR_ARTEFACTS</parameterName>
+      </selector>
+      <flatten>true</flatten>
+      <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
+    </hudson.plugins.copyartifact.CopyArtifact>
+    <hudson.tasks.Shell>
+      <command>echo &quot;BRANCH_DEPLOYER=${BRANCH_DEPLOYER}&quot;
+
+git clone -b ${BRANCH_DEPLOYER} ssh://git@gitlab.aql.fr/afp001/puma-deployer.git
+cd ${WORKSPACE}
+
+./puma-deployer/start-jenkins.sh ${TARGET_PLATFORM} adminprojet</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.28">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter></cleanupParameter>
+      <externalDelete></externalDelete>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.7.2"/>
+    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.4.2">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+    <com.cloudbees.jenkins.plugins.sshagent.SSHAgentBuildWrapper plugin="ssh-agent@1.8">
+      <credentialIds>
+        <string>b81dc237-40f8-4423-b85a-36968f45d00c</string>
+      </credentialIds>
+      <ignoreMissing>false</ignoreMissing>
+    </com.cloudbees.jenkins.plugins.sshagent.SSHAgentBuildWrapper>
+    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.3">
+      <template>#${BUILD_NUMBER}-${ENV,var=&quot;TARGET_PLATFORM&quot;}</template>
+    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
+  </buildWrappers>
+</project>

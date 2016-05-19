@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<com.cloudbees.plugins.flow.BuildFlow plugin="build-flow-plugin@0.18">
+  <actions/>
+  <description>Build flow rpm all with parameters</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>10</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>BUILD_BRANCH</name>
+          <description>Define your branch git name&lt;br/&gt;
+Values: develop, release/v0.9.0, master/v1.0.0&lt;br/&gt;</description>
+          <defaultValue>develop</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.25.orange2"/>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>(Default)</jdk>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders/>
+  <publishers/>
+  <buildWrappers/>
+  <icon/>
+  <dsl>def templateBuildSelector = &apos;&lt;SpecificBuildSelector&gt;&lt;buildNumber&gt;%1$s&lt;/buildNumber&gt;&lt;/SpecificBuildSelector&gt;&apos;
+
+// build parallel
+joins = parallel ([
+  build_loader: { build(&quot;puma-build-rpm-component&quot;, BUILD_BRANCH: params.BUILD_BRANCH, REPO_NAME:&quot;loader-eden&quot;) },
+  build_atom:   { build(&quot;puma-build-rpm-component&quot;, BUILD_BRANCH: params.BUILD_BRANCH, REPO_NAME:&quot;atom-mediation&quot;) },
+  build_puma:   { build(&quot;puma-build-rpm-component&quot;, BUILD_BRANCH: params.BUILD_BRANCH, REPO_NAME:&quot;puma&quot;) }
+])
+
+def build_loader_name = joins.build_loader.lastBuild.toString();
+def build_atom_name = joins.build_atom.lastBuild.toString();
+def build_puma_name = joins.build_puma.lastBuild.toString();
+
+def build_loader_number = (build_loader_name =~ /#(.+?)-/)[0][1]
+def build_atom_number = (build_atom_name =~ /#(.+?)-/)[0][1]
+def build_puma_number = (build_puma_name =~ /#(.+?)-/)[0][1]
+
+def build_atom_id   = sprintf( templateBuildSelector, build_atom_number )
+def build_puma_id   = sprintf( templateBuildSelector, build_puma_number )
+def build_loader_id = sprintf( templateBuildSelector, build_loader_number )
+
+out.println &quot;build_atom_id: $build_atom_id&quot;
+out.println &quot;build_loader_id: $build_loader_id&quot;
+out.println &quot;build_puma_id: $build_puma_id&quot;
+
+// join artefacts
+build_join = build(&quot;puma-build-rpms-join-artefacts&quot;,
+                   BUILD_BRANCH: params.BUILD_BRANCH,
+                   BUILD_SELECTOR_ATOM: build_atom_id, 
+                   BUILD_SELECTOR_LOADER: build_loader_id, 
+                   BUILD_SELECTOR_PUMA: build_puma_id
+                  )
+
+def build_join_name = build_join.properties.displayName;
+build_join_number = (build_join_name =~ /#(.+?)-/)[0][1]
+out.println &quot;build_join_number:$build_join_number&quot;
+
+// return build join id artefacts
+def build_join_id = sprintf( templateBuildSelector, build_join_number)  
+out.println &quot;result_build_join_id=$build_join_id&quot;
+System.setProperty(&apos;result_build_join_id&apos;, build_join_id);
+</dsl>
+  <buildNeedsWorkspace>false</buildNeedsWorkspace>
+</com.cloudbees.plugins.flow.BuildFlow>

@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Build joins artefacts rpms</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>10</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>BUILD_BRANCH</name>
+          <description>git branch : develop, release/v0.2.0, ...</description>
+          <defaultValue>develop</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.plugins.copyartifact.BuildSelectorParameter plugin="copyartifact@1.35.2">
+          <name>BUILD_SELECTOR_ATOM</name>
+          <description>build number on job &lt;u&gt;puma-build-rpm-component&lt;/u&gt; for &lt;b&gt;ATOM&lt;/b&gt;</description>
+          <defaultSelector class="hudson.plugins.copyartifact.SpecificBuildSelector">
+            <buildNumber>lastSuccessfulBuild</buildNumber>
+          </defaultSelector>
+        </hudson.plugins.copyartifact.BuildSelectorParameter>
+        <hudson.plugins.copyartifact.BuildSelectorParameter plugin="copyartifact@1.35.2">
+          <name>BUILD_SELECTOR_PUMA</name>
+          <description>build number on job &lt;u&gt;puma-build-rpm-component&lt;/u&gt; for &lt;b&gt;PUMA (Moodle)&lt;/b&gt;</description>
+          <defaultSelector class="hudson.plugins.copyartifact.SpecificBuildSelector">
+            <buildNumber>lastSuccessfulBuild</buildNumber>
+          </defaultSelector>
+        </hudson.plugins.copyartifact.BuildSelectorParameter>
+        <hudson.plugins.copyartifact.BuildSelectorParameter plugin="copyartifact@1.35.2">
+          <name>BUILD_SELECTOR_LOADER</name>
+          <description>build number on job &lt;u&gt;puma-build-rpm-component&lt;/u&gt; for &lt;b&gt;LOADER-EDEN&lt;/b&gt;</description>
+          <defaultSelector class="hudson.plugins.copyartifact.SpecificBuildSelector">
+            <buildNumber>lastSuccessfulBuild</buildNumber>
+          </defaultSelector>
+        </hudson.plugins.copyartifact.BuildSelectorParameter>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.25.orange2"/>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>(Default)</jdk>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.35.2">
+      <project>puma-build-rpm-component</project>
+      <filter>*.rpm</filter>
+      <target></target>
+      <excludes></excludes>
+      <selector class="hudson.plugins.copyartifact.ParameterizedBuildSelector">
+        <parameterName>BUILD_SELECTOR_ATOM</parameterName>
+      </selector>
+      <flatten>true</flatten>
+      <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
+    </hudson.plugins.copyartifact.CopyArtifact>
+    <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.35.2">
+      <project>puma-build-rpm-component</project>
+      <filter>*.rpm</filter>
+      <target></target>
+      <excludes></excludes>
+      <selector class="hudson.plugins.copyartifact.ParameterizedBuildSelector">
+        <parameterName>BUILD_SELECTOR_PUMA</parameterName>
+      </selector>
+      <flatten>true</flatten>
+      <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
+    </hudson.plugins.copyartifact.CopyArtifact>
+    <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.35.2">
+      <project>puma-build-rpm-component</project>
+      <filter>*.rpm</filter>
+      <target></target>
+      <excludes></excludes>
+      <selector class="hudson.plugins.copyartifact.ParameterizedBuildSelector">
+        <parameterName>BUILD_SELECTOR_LOADER</parameterName>
+      </selector>
+      <flatten>true</flatten>
+      <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
+    </hudson.plugins.copyartifact.CopyArtifact>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>*.rpm</artifacts>
+      <allowEmptyArchive>false</allowEmptyArchive>
+      <onlyIfSuccessful>false</onlyIfSuccessful>
+      <fingerprint>false</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+    </hudson.tasks.ArtifactArchiver>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.28">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter></cleanupParameter>
+      <externalDelete></externalDelete>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.3.1">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+    <com.cloudbees.jenkins.plugins.customtools.CustomToolInstallWrapper plugin="custom-tools-plugin@0.4.3">
+      <selectedTools/>
+      <multiconfigOptions>
+        <skipMasterInstallation>false</skipMasterInstallation>
+      </multiconfigOptions>
+      <convertHomesToUppercase>false</convertHomesToUppercase>
+    </com.cloudbees.jenkins.plugins.customtools.CustomToolInstallWrapper>
+    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.3">
+      <template>#${BUILD_NUMBER}-${ENV,var=&quot;BUILD_BRANCH&quot;}</template>
+    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
+  </buildWrappers>
+</project>

@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Build rpm for an specify component</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>5</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>BUILD_BRANCH</name>
+          <description></description>
+          <defaultValue>release/v01.10</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>REPO_NAME</name>
+          <description></description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>atom-mediation</string>
+              <string>puma</string>
+              <string>loader-eden</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.25.orange2"/>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>rpmbuild &amp;&amp; centos-6</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>Oracle JDK 7u71</jdk>
+  <triggers/>
+  <concurrentBuild>true</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>export PATH=${PATH}:/home/puma/node-v0.12.7-linux-x64/bin:/home/puma/apache-maven-3.2.3/bin
+echo &quot;PATH=${PATH}&quot;
+echo &quot;REPO_NAME=${REPO_NAME}&quot;
+echo &quot;BUILD_BRANCH=${BUILD_BRANCH}&quot;
+echo
+
+rm -rf ${WORKSPACE}/*
+git clone -b master ssh://git@gitlab.aql.fr/afp001/rpmtools.git
+git clone -b ${BUILD_BRANCH} ssh://git@gitlab.aql.fr/afp001/${REPO_NAME}.git
+cd ${WORKSPACE}
+
+if [ &quot;${REPO_NAME}&quot; == &quot;atom-mediation&quot; ]; then
+
+  # build java (add your settings.xml in .m2)
+  mvn clean package -Pprod -Dmaven.test.skip=true -f ${WORKSPACE}/atom-mediation/pom.xml
+  # post compilation java
+  ./atom-mediation/atom-assembly/postbuild.sh
+  # build rpm
+  ./rpmtools/rpmpackage.sh ./atom-mediation/atom-assembly/atom-mediation
+
+elif [ &quot;${REPO_NAME}&quot; == &quot;loader-eden&quot; ]; then
+
+  # build rpm
+  ./rpmtools/rpmpackage.sh ./loader-eden
+
+elif [ &quot;${REPO_NAME}&quot; == &quot;puma&quot; ]; then
+
+  # build rpm
+  ./rpmtools/rpmpackage.sh ./puma
+
+fi</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>*.rpm</artifacts>
+      <allowEmptyArchive>false</allowEmptyArchive>
+      <onlyIfSuccessful>false</onlyIfSuccessful>
+      <fingerprint>false</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+    </hudson.tasks.ArtifactArchiver>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.6.2"/>
+    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.3.1">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+    <com.cloudbees.jenkins.plugins.sshagent.SSHAgentBuildWrapper plugin="ssh-agent@1.8">
+      <credentialIds>
+        <string>b81dc237-40f8-4423-b85a-36968f45d00c</string>
+      </credentialIds>
+      <ignoreMissing>false</ignoreMissing>
+    </com.cloudbees.jenkins.plugins.sshagent.SSHAgentBuildWrapper>
+    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.3">
+      <template>#${BUILD_NUMBER}-${ENV,var=&quot;BUILD_BRANCH&quot;}-${ENV,var=&quot;REPO_NAME&quot;}</template>
+    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
+  </buildWrappers>
+</project>

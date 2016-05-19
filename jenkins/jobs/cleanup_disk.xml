@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>
+This job was created by using job-dsl-plugin. It&apos;s a good practice to use it.
+&lt;br/&gt;The following Job DSL script can be used to rebuild this job: &lt;br/&gt;&lt;pre&gt;
+
+job() {
+    name &apos;cleanup_disk&apos;
+    description &amp;quot;&amp;quot;&amp;quot;
+This job was created by using job-dsl-plugin. It&apos;s a good practice to use it.
+&amp;quot;&amp;quot;&amp;quot;
+    logRotator(-1,20,-1,3)
+    blockOnUpstreamProjects()
+    concurrentBuild()
+    triggers {
+        // &apos;H&apos; means hash, ie randomize the value to spread the load
+    cron(&apos;H H(0-5) * * 0-4&apos;)
+    }
+
+    steps {
+        shell(&amp;quot;&amp;quot;&amp;quot;
+            |curl -s http://faas.orangeforge.rd.francetelecom.fr/pub/tools/cleanup/cleanup-slave.sh | bash
+            |&amp;quot;&amp;quot;&amp;quot;.stripMargin())
+    }
+
+    wrappers {
+        timestamps()
+    }
+
+    configure {
+        it / &apos;properties&apos; /  &apos;hudson.model.ParametersDefinitionProperty&apos; / &apos;parameterDefinitions&apos; / &apos;org.jvnet.jenkins.plugins.nodelabelparameter.NodeParameterDefinition&apos; {
+            name &apos;Esclaves &amp;agrave; nettoyer&apos;
+            description &apos;S&amp;eacute;lectionner les esclaves &amp;agrave; nettoyer. Il ne faut pas s&amp;eacute;lectionner master.&apos;
+            allowedSlaves {
+                string  &apos;ALL (no restriction)&apos;
+            }
+            defaultSlaves {
+                string &apos;PHP CentOS&apos;
+            }
+            triggerIfResult &apos;allowMultiSelectionForConcurrentBuilds&apos;
+            allowMultiNodeSelection &apos;true&apos;
+            triggerConcurrentBuilds &apos;true&apos;
+            ignoreOfflineNodes &apos;false&apos;
+            nodeEligibility(class: &apos;org.jvnet.jenkins.plugins.nodelabelparameter.node.IgnoreTempOfflineNodeEligibility&apos;)
+        }
+    }
+}
+
+&lt;/pre&gt;
+</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>20</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>3</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <org.jvnet.jenkins.plugins.nodelabelparameter.NodeParameterDefinition plugin="nodelabelparameter@1.5.1">
+          <name>Esclaves à nettoyer</name>
+          <description>Sélectionner les esclaves à nettoyer. Il ne faut pas sélectionner master.</description>
+          <allowedSlaves>
+            <string>ALL (no restriction)</string>
+          </allowedSlaves>
+          <defaultSlaves>
+            <string>PHP CentOS</string>
+          </defaultSlaves>
+          <triggerIfResult>allowMultiSelectionForConcurrentBuilds</triggerIfResult>
+          <allowMultiNodeSelection>true</allowMultiNodeSelection>
+          <triggerConcurrentBuilds>true</triggerConcurrentBuilds>
+          <ignoreOfflineNodes>false</ignoreOfflineNodes>
+          <nodeEligibility class="org.jvnet.jenkins.plugins.nodelabelparameter.node.AllNodeEligibility"/>
+        </org.jvnet.jenkins.plugins.nodelabelparameter.NodeParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.24.orange1"/>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>true</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.TimerTrigger>
+      <spec>H H(0-5) * * 0-4</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <concurrentBuild>true</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>
+curl -s http://faas.orangeforge.rd.francetelecom.fr/pub/tools/cleanup/cleanup-slave.sh | bash
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.5.14"/>
+  </buildWrappers>
+</project>

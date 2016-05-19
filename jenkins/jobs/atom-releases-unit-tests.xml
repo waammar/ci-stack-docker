@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>100</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.28.orange2"/>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>git@gitlab.aql.fr:afp001/atom-mediation.git</url>
+        <credentialsId>b81dc237-40f8-4423-b85a-36968f45d00c</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>origin/release/v01.*</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <assignedNode>faas-AFP001-2ahn2s1mj</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>Oracle JDK 7u71</jdk>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>H */12 * * *
+@hourly</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Maven>
+      <targets>clean install</targets>
+      <mavenName>Apache Maven 3.2.3</mavenName>
+      <pom>pom.xml</pom>
+      <usePrivateRepository>false</usePrivateRepository>
+      <settings class="org.jenkinsci.plugins.configfiles.maven.job.MvnSettingsProvider" plugin="config-file-provider@2.10.0">
+        <settingsConfigId>org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig1427196164419</settingsConfigId>
+      </settings>
+      <globalSettings class="org.jenkinsci.plugins.configfiles.maven.job.MvnGlobalSettingsProvider" plugin="config-file-provider@2.10.0">
+        <settingsConfigId>org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig-faas</settingsConfigId>
+      </globalSettings>
+    </hudson.tasks.Maven>
+    <hudson.tasks.Shell>
+      <command>SONAR_GIT_BRANCH=$(echo ${GIT_BRANCH} |sed -e &quot;s/origin\///&quot; -e &quot;s/\//_/&quot; -e &quot;s/[.]/_/&quot;)
+echo &quot;SONAR_GIT_BRANCH=$SONAR_GIT_BRANCH&quot; &gt; jobconfig.properties</command>
+    </hudson.tasks.Shell>
+    <EnvInjectBuilder plugin="envinject@1.92.1">
+      <info>
+        <propertiesFilePath>jobconfig.properties</propertiesFilePath>
+      </info>
+    </EnvInjectBuilder>
+  </builders>
+  <publishers>
+    <hudson.plugins.testng.Publisher plugin="testng-plugin@1.9.1">
+      <reportFilenamePattern>**/testng-results.xml</reportFilenamePattern>
+      <escapeTestDescp>false</escapeTestDescp>
+      <escapeExceptionMsg>true</escapeExceptionMsg>
+      <showFailedBuilds>true</showFailedBuilds>
+      <unstableOnSkippedTests>true</unstableOnSkippedTests>
+    </hudson.plugins.testng.Publisher>
+    <hudson.plugins.sonar.SonarPublisher plugin="sonar@2.2.1">
+      <jdk>Oracle JDK 7u71</jdk>
+      <installationName>Sonar-FaaS</installationName>
+      <branch>${SONAR_GIT_BRANCH}</branch>
+      <mavenOpts></mavenOpts>
+      <jobAdditionalProperties>-gs ${GLOBAL_SETTINGS} -Dsonar.exclusions=fr/afpa/puma/atom/eden/entity/**,fr/afpa/puma/atom/eden/dao/**,fr/afpa/puma/atom/business/**,fr/afpa/puma/atom/persistence/entity/**,fr/afpa/puma/atomweb/aop/**,fr/afpa/puma/atomweb/async/**,fr/afpa/puma/atomweb/config/**,fr/afpa/puma/atomweb/domain/**,fr/afpa/puma/atomweb/security/**,fr/afpa/puma/atomweb/service/**,fr/afpa/puma/atomweb/web/filter/**</jobAdditionalProperties>
+      <mavenInstallationName>Apache Maven 3.2.3</mavenInstallationName>
+      <rootPom></rootPom>
+      <settings class="org.jenkinsci.plugins.configfiles.maven.job.MvnSettingsProvider" plugin="config-file-provider@2.10.0">
+        <settingsConfigId>org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig1427196164419</settingsConfigId>
+      </settings>
+      <globalSettings class="org.jenkinsci.plugins.configfiles.maven.job.MvnGlobalSettingsProvider" plugin="config-file-provider@2.10.0">
+        <settingsConfigId>org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig-faas</settingsConfigId>
+      </globalSettings>
+      <usePrivateRepository>false</usePrivateRepository>
+    </hudson.plugins.sonar.SonarPublisher>
+    <hudson.tasks.Mailer plugin="mailer@1.16">
+      <recipients></recipients>
+      <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>true</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers>
+    <org.jenkinsci.plugins.configfiles.buildwrapper.ConfigFileBuildWrapper plugin="config-file-provider@2.10.0">
+      <managedFiles>
+        <org.jenkinsci.plugins.configfiles.buildwrapper.ManagedFile>
+          <fileId>org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig-faas</fileId>
+          <targetLocation></targetLocation>
+          <variable>GLOBAL_SETTINGS</variable>
+        </org.jenkinsci.plugins.configfiles.buildwrapper.ManagedFile>
+      </managedFiles>
+    </org.jenkinsci.plugins.configfiles.buildwrapper.ConfigFileBuildWrapper>
+    <com.cloudbees.jenkins.plugins.sshagent.SSHAgentBuildWrapper plugin="ssh-agent@1.8">
+      <credentialIds>
+        <string>b81dc237-40f8-4423-b85a-36968f45d00c</string>
+      </credentialIds>
+      <ignoreMissing>false</ignoreMissing>
+    </com.cloudbees.jenkins.plugins.sshagent.SSHAgentBuildWrapper>
+  </buildWrappers>
+</project>
